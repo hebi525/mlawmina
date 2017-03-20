@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.trizleo.mlawmina.fragments.TestFragment;
 import android.trizleo.mlawmina.models.Case;
 import android.view.Gravity;
@@ -39,6 +40,9 @@ public class AddCaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_case);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.add_case_toolbar);
+        setSupportActionBar(toolbar);
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         final EditText dateOpened = (EditText) findViewById(R.id.et_dateOpened);
@@ -52,7 +56,7 @@ public class AddCaseActivity extends AppCompatActivity {
         final String[] caseTypeList = {
                 "PRACTICE AREA 1",
                 "PRACTICE AREA 2",
-                "PRACTICE AREA 3"
+                "CRIMINAL"
         };
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, caseTypeList);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -108,10 +112,11 @@ public class AddCaseActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(MainActivity.currentUserSession!=null){
-                    MainActivity.currentUserSession.getUserCaseList().add(new Case(
+                    ArrayList<Case> newCaseList = MainActivity.currentUserSession.getUserCaseList();
+                    newCaseList.add(new Case(
                             caseName.getText().toString(),
                             Integer.parseInt(caseNumber.getText().toString()),
-                            caseTypeList[caseType.getSelectedItemPosition()],
+                            caseTypeList[caseType.getSelectedItemPosition()-1],
                             description.getText().toString(),
                             plaintiff.getText().toString(),
                             defendant.getText().toString(),
@@ -122,6 +127,7 @@ public class AddCaseActivity extends AppCompatActivity {
                             ));
 
                     Toast.makeText(AddCaseActivity.this, "Case created successfully!", Toast.LENGTH_SHORT).show();
+                    MainActivity.currentUserSession.updateUserCaseList(newCaseList);
                     onBackPressed();
                 }
             }

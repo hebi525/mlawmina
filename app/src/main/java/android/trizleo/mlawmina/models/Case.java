@@ -1,12 +1,13 @@
 package android.trizleo.mlawmina.models;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by hebi525 on 05-Mar-17.
  */
 
-public class Case {
+public class Case implements Serializable {
     private String name;
     private int number;
     private String type;
@@ -21,6 +22,9 @@ public class Case {
     private String defendant;
     private int client;
     private String limitations;
+
+    //for dynamic ui changes
+    public boolean isToggled;
 
     public Case(String name, int number, String type, String description, String plaintiff, String defendant, String limitations, String dateOfOpening, int client, List<Object> lawyerList) {
         this.name = name;

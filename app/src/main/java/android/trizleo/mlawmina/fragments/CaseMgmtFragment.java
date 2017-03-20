@@ -3,6 +3,7 @@ package android.trizleo.mlawmina.fragments;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -24,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -76,30 +78,29 @@ public class CaseMgmtFragment extends Fragment{
         initRecyclerView();
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        //Toast.makeText(getActivity(), "+onActivityResult", Toast.LENGTH_SHORT).show();
-
-    }
-
     private void initRecyclerView(){
         if(MainActivity.currentUserSession!=null) {
-            MyRecyclerAdapter adapter = new MyRecyclerAdapter(getActivity(), (ArrayList<Case>) MainActivity.currentUserSession.getUserCaseList());
+            MyRecyclerAdapter adapter = new MyRecyclerAdapter(getActivity(), MainActivity.currentUserSession.getUserCaseList());
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
             recyclerView.addOnItemTouchListener(new MyOnItemTouchListener(getActivity(), recyclerView, new RClickListener() {
                 @Override
                 public void onClick(View view, int position) {
-                    //TODO: this should show dialog with case info and controls.
                 }
 
                 @Override
-                public void onLongClick(View view, int position) {
-                    Toast.makeText(getActivity(), "hello "+position, Toast.LENGTH_SHORT).show();
+                public void onLongClick(View view, final int position) {
+                    //TODO: YEY IT WORKED, NOW TO ADD ANIMATIONS ON ACCESS CONTROL FOR EACH CASE ITEM!
+                    MyRecyclerAdapter adapter = (MyRecyclerAdapter) recyclerView.getAdapter();
+                    adapter.notifyItemChanged(adapter.getPreviousToggled());
+                    adapter.notifyItemChanged(recyclerView.getChildPosition(view));
 
+                    if(adapter.getPreviousToggled() >= 0) {
+                        adapter.getItemList().get(adapter.getPreviousToggled()).isToggled = false;
+                    }
+                    adapter.getItemList().get(position).isToggled = true;
 
+                    adapter.setPreviousToggled(position);
                 }
             }));
         }
@@ -112,19 +113,28 @@ public class CaseMgmtFragment extends Fragment{
         public TextView textView;
         public TextView textView1;
         public TextView textView2;
+//        public TextView textView3;
+//        public TextView textView4;
+        public ImageButton imageButton;
+        public ImageButton imageButton1;
 
         public MyViewHolder(View itemView){
             super(itemView);
-
             textView = (TextView) itemView.findViewById(R.id.case_name);
-            textView2 = (TextView) itemView.findViewById(R.id.case_type);
-            textView1 = (TextView) itemView.findViewById(R.id.case_date_opened);
+            textView1 = (TextView) itemView.findViewById(R.id.case_type);
+            textView2 = (TextView) itemView.findViewById(R.id.case_date_opened);
+//            textView3 = (TextView) itemView.findViewById(R.id.case_number);
+//            textView4 = (TextView) itemView.findViewById(R.id.case_description);
+            imageButton = (ImageButton) itemView.findViewById(R.id.case_btn_delete);
+            imageButton1 = (ImageButton) itemView.findViewById(R.id.case_btn_edit);
         }
     }
 
     private class MyRecyclerAdapter extends RecyclerView.Adapter<MyViewHolder>{
+        public int previousToggled = -1;
         private LayoutInflater inflater;
         private ArrayList<Case> itemList;
+        public String selectedItems;
 
         public MyRecyclerAdapter(Context context, ArrayList<Case> itemList) {
             this.inflater = LayoutInflater.from(context);
@@ -140,15 +150,52 @@ public class CaseMgmtFragment extends Fragment{
         }
 
         @Override
-        public void onBindViewHolder(MyViewHolder holder, int position) {
+        public void onBindViewHolder(MyViewHolder holder, final int position) {
             holder.textView.setText(itemList.get(position).getName());
             holder.textView1.setText(itemList.get(position).getType());
             holder.textView2.setText("03/02/1995");
+//            holder.textView3.setText(itemList.get(position).getNumber()+"");
+//            holder.textView4.setText(itemList.get(position).getDescription());
+
+            if(itemList.get(position).isToggled){
+                holder.imageButton.setVisibility(View.VISIBLE);
+                holder.imageButton1.setVisibility(View.VISIBLE);
+
+                holder.imageButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        itemList.remove(position);
+                        notifyItemRemoved(position);
+                        notifyItemRangeChanged(position, getItemCount());
+                    }
+                });
+//                holder.textView3.setVisibility(View.VISIBLE);
+//                holder.textView4.setVisibility(View.VISIBLE);
+            }
+            else{
+                if(holder.imageButton.getVisibility() == View.VISIBLE){
+                    holder.imageButton.setVisibility(View.GONE);
+                }if(holder.imageButton1.getVisibility() == View.VISIBLE){
+                    holder.imageButton1.setVisibility(View.GONE);
+                }
+            }
         }
 
         @Override
         public int getItemCount() {
             return itemList.size();
+        }
+
+        public void setPreviousToggled(int previousToggled) {
+            this.previousToggled = previousToggled;
+        }
+
+        public int getPreviousToggled() {
+            return previousToggled;
+        }
+
+        public ArrayList<Case> getItemList() {
+            return itemList;
         }
     }
 }

@@ -10,6 +10,7 @@ import android.support.v7.view.menu.ActionMenuItem;
 import android.trizleo.mlawmina.fragments.CaseMgmtFragment;
 import android.trizleo.mlawmina.fragments.DashboardFragment;
 import android.trizleo.mlawmina.models.Card;
+import android.trizleo.mlawmina.models.Case;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -21,18 +22,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    public static UserSession currentUserSession;
+    public static UserSession currentUserSession = null;
     private Fragment currentFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        currentUserSession = new UserSession();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -45,6 +46,19 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        createUserSession();
+    }
+
+    public void createUserSession(){
+
+        Intent intent = getIntent();
+        String intentUsername = intent.getStringExtra("USERNAME");
+        String intentPassword = intent.getStringExtra("PASSWORD");
+        ArrayList<Case> intentCaseList = (ArrayList<Case>) intent.getSerializableExtra("CASE_LIST");
+
+        currentUserSession = new UserSession(this, intentUsername, intentPassword);
+        currentUserSession.updateUserCaseList(intentCaseList);
     }
 
     @Override
